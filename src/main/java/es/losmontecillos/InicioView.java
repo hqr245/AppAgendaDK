@@ -11,7 +11,7 @@ public class InicioView {
         try {
             FXMLLoader loader = new FXMLLoader(InicioView.class.getResource("/fxml/inicio.fxml"));
             View view = loader.load();
-            inicioController = loader.getController();
+            this.inicioController = loader.getController();
             return view;
         } catch (IOException e) {
             System.out.println("IOException: " + e);
