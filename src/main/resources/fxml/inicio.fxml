@@ -6,18 +6,25 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
+<!-- Se podría añadir al final de esta línea el controller "fx:controller="es.ieslosmontecillos.InicioController""-->
 
-<View id="inicio" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23" xmlns:fx="http://javafx.com/fxml/1" fx:controller="es.losmontecillos.InicioController">
+<View fx:id="inicio" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="es.losmontecillos.InicioController">
    <center>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
          <children>
-            <Label text="App Agenda" />
-            <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+            <Label fx:id="label" alignment="CENTER" onMouseClicked="#iniciaApp" text="Agenda">
+               <font>
+                  <Font name="System Bold" size="30.0" />
+               </font>
+            </Label>
+            <ImageView fitHeight="200.0" fitWidth="200.0" onMouseClicked="#iniciaApp" pickOnBounds="true" preserveRatio="true">
                <image>
                   <Image url="@../img/appAgendaIcon.png" />
-               </image>
-            </ImageView>
+               </image></ImageView>
          </children>
       </VBox>
    </center>

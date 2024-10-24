@@ -5,10 +5,13 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javax.xml.bind.annotation.XmlElement;
-public class Provincia {
+
+public class Provincia
+{
     private final IntegerProperty id = new SimpleIntegerProperty();
     private final StringProperty codigo = new SimpleStringProperty();
     private final StringProperty nombre = new SimpleStringProperty();
+
     //campo id
     @XmlElement(name = "id")
     public Integer getId() {
@@ -20,6 +23,7 @@ public class Provincia {
     public void setId(Integer id) {
         this.id.set(id);
     }
+
     //campo codigo
     @XmlElement(name = "codigo")
     public String getCodigo() {
@@ -31,6 +35,7 @@ public class Provincia {
     public void setCodigo(String codigo) {
         this.codigo.set(codigo);
     }
+
     //campo nombre
     @XmlElement(name = "nombre")
     public String getNombre() {

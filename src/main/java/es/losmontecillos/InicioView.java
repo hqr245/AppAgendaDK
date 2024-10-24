@@ -2,8 +2,8 @@ package es.losmontecillos;
 
 import com.gluonhq.charm.glisten.mvc.View;
 import java.io.IOException;
-
 import javafx.fxml.FXMLLoader;
+
 public class InicioView {
     private InicioController inicioController;
 
@@ -11,7 +11,7 @@ public class InicioView {
         try {
             FXMLLoader loader = new FXMLLoader(InicioView.class.getResource("/fxml/inicio.fxml"));
             View view = loader.load();
-            this.inicioController = loader.getController();
+            inicioController = loader.getController();
             return view;
         } catch (IOException e) {
             System.out.println("IOException: " + e);
