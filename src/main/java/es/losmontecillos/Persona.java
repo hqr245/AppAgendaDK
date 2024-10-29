@@ -9,7 +9,7 @@ public class Persona
     private final IntegerProperty id = new SimpleIntegerProperty();
     private final StringProperty nombre = new SimpleStringProperty();
     private final StringProperty apellidos = new SimpleStringProperty();
-    private Provincia provincia = new Provincia();
+    private ObjectProperty<Provincia> provincia = new SimpleObjectProperty<>();
     private final StringProperty telefono = new SimpleStringProperty();
     private final StringProperty email = new SimpleStringProperty();
     private StringProperty fechaNacimiento = new SimpleStringProperty();
@@ -81,12 +81,12 @@ public class Persona
     //campo provincia
     @XmlElement(name = "provincia")
     public Provincia getProvincia() {
+        return provincia.get();
+    }
+    public ObjectProperty<Provincia> provinciaProperty() {
         return provincia;
     }
-    public Provincia provinciaProperty() {
-        return provincia;
-    }
-    public void setProvincia(Provincia provincia) {this.provincia = provincia;}
+    public void setProvincia(Provincia prov) {provincia.set(prov);}
 
     //campo Fecha Nacimiento
     @XmlElement(name = "fechaNacimiento")

@@ -1,16 +1,20 @@
 package es.losmontecillos;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import javafx.util.StringConverter;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.text.ParseException;
@@ -21,9 +25,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
-public class PersonaDetalleViewController
-{
+public class PersonaDetalleViewController implements Initializable {
     //Atributos
     @javafx.fxml.FXML
     private AnchorPane rootPersonaDetalleView;
@@ -63,6 +67,7 @@ public class PersonaDetalleViewController
     private DataUtil dataUtil;
     private boolean nuevaPersona;
     private boolean errorFormato = false;
+    private InicioController inicioController;
 
     //Métodos
     public void setRootAgendaView(AnchorPane rootAgendaView) {this.rootAgendaView = rootAgendaView;}
@@ -83,8 +88,7 @@ public class PersonaDetalleViewController
         this.nuevaPersona=nuevaPersona;
     }
 
-    public void mostrarDatos() throws ParseException
-    {
+    public void mostrarDatos() throws ParseException {
         textFieldNombre.setText(persona.getNombre());
         textFieldApellidos.setText(persona.getApellidos());
         textFieldTelefono.setText(persona.getTelefono());
@@ -186,8 +190,7 @@ public class PersonaDetalleViewController
     }
 
     @javafx.fxml.FXML
-    private void onActionButtonExaminar(ActionEvent event)
-    {
+    private void onActionButtonExaminar(ActionEvent event) {
         File carpetaFotos = new File(CARPETA_FOTOS);
 
         if (!carpetaFotos.exists())
@@ -226,8 +229,7 @@ public class PersonaDetalleViewController
     }
 
     @javafx.fxml.FXML
-    private void onActionSuprimirFoto(ActionEvent event)
-    {
+    private void onActionSuprimirFoto(ActionEvent event){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmar supresión de imagen");
         alert.setHeaderText("¿Desea SUPRIMIR el archivo asociado a la imagen,\n"+ "quitar la foto pero MANTENER el archivo, \no CANCELAR la operación?");
@@ -259,8 +261,7 @@ public class PersonaDetalleViewController
     }
 
     @javafx.fxml.FXML
-    private void onActionButtonGuardar(ActionEvent event) throws ParseException
-    {
+    private void onActionButtonGuardar(ActionEvent event) throws ParseException{
         //Actualizar las propiedades del objeto Persona obteniendo la información que se encuentre en cada
         //uno de los controles de la ventana
 
@@ -420,8 +421,7 @@ public class PersonaDetalleViewController
     }
 
     @javafx.fxml.FXML
-    private void onActionButtonCancelar(ActionEvent event)
-    {
+    private void onActionButtonCancelar(ActionEvent event){
         //Devolver al foco al TableView, concretamente a la misma fila que estuviera
         //seleccionada previamente
         int numFilaSeleccionada =
@@ -437,5 +437,39 @@ public class PersonaDetalleViewController
                 (StackPane) rootPersonaDetalleView.getScene().getRoot();
         rootMain.getChildren().remove(rootPersonaDetalleView);
         rootAgendaView.setVisible(true);
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+
+
+        comboBoxProvincia.setOnMouseClicked(e->{
+
+            if(comboBoxProvincia.getItems().isEmpty()) {
+
+                comboBoxProvincia.setItems(dataUtil.getOlProvincias());
+
+            }
+        });
+
+        comboBoxProvincia.setCellFactory(listView->new ListCell<>(){
+
+            public void updateItem(Provincia item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null) {
+
+                    setText(item.nombreProperty().get());//return String, actuall name of material
+
+                }
+                else {
+                    setText(null);
+                }
+            }
+
+        });
+    }
+
+    public void setInicioController(InicioController inicioController) {
+        this.inicioController = inicioController;
     }
 }

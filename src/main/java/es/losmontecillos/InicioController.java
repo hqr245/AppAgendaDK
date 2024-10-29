@@ -21,6 +21,7 @@ public class InicioController {
     private Pane rootMain = new Pane();
     @FXML
     public void iniciaApp(Event event){
+
         try{
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/AgendaView.fxml"));
 
@@ -30,7 +31,7 @@ public class InicioController {
             agendaViewController.setDataUtil(dataUtil);
             agendaViewController.setOlProvincias(olProv);
             agendaViewController.setOlPersonas(olPers);
-            //agendaViewController.cargarTodasPersonas();
+            agendaViewController.cargarTodasPersonas();
         } catch (IOException e) {
             System.out.println("IOException: " + e);
         }
