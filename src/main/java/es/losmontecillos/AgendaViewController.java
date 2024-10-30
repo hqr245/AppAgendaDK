@@ -2,7 +2,9 @@ package es.losmontecillos;
 
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -58,7 +60,6 @@ public class AgendaViewController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
 
-
         columnNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         columnEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         columnApellidos.setCellValueFactory(new PropertyValueFactory<>("apellidos"));
@@ -73,12 +74,20 @@ public class AgendaViewController implements Initializable {
                     return property;
                 });
 
+        tableViewAgenda.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observableValue, Object o, Object t1) {
+                textFieldNombre.setText(((Persona)t1).getNombre());
+                textFieldApellidos.setText(((Persona)t1).getApellidos());
+            }
+        });
+
+
 
     }
 
     @FXML
     public void onActionButtonSuprimir(ActionEvent actionEvent) {
-        System.out.println("Suprimir pulsado");
 
 
     }
@@ -86,30 +95,53 @@ public class AgendaViewController implements Initializable {
     @FXML
     public void onActionButtonEditar(ActionEvent actionEvent) {
         System.out.println("Editar pulsado");
-    }
-
-    @FXML
-    public void onActionButtonGuardar(ActionEvent actionEvent) {
-        System.out.println("Guardar pulsado");
-    }
-
-    @FXML
-    public void onActionButtonNuevo(ActionEvent actionEvent) {
-
-
-
 
         try{
 
-            int entero =0;
-            System.out.println(entero);
 // Cargar la vista de detalle
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/PersonaDetalleView.fxml"));
 
             Parent rootDetalleView=fxmlLoader.load();
             PersonaDetalleViewController personaDetalleViewController=fxmlLoader.getController();
             personaDetalleViewController.setDataUtil(dataUtil);
+            personaDetalleViewController.setRootAgendaView(rootAgendaView);
+            personaDetalleViewController.setTableViewPrevio(tableViewAgenda);
+            personaDetalleViewController.setPersona((Persona)tableViewAgenda.getSelectionModel().getSelectedItem());
 
+            // Ocultar la vista de la lista
+            rootAgendaView.setVisible(false);
+            StackPane rootMain = (StackPane) rootAgendaView.getScene().getRoot();
+            rootMain.getChildren().add(rootDetalleView);
+        } catch (IOException ex){
+            ex.printStackTrace();}
+
+    }
+
+
+
+    @FXML
+    public void onActionButtonGuardar(ActionEvent actionEvent) {
+
+    Persona kekw=(Persona)tableViewAgenda.getSelectionModel().getSelectedItem();
+        System.out.println(kekw.getId());
+    }
+
+    @FXML
+    public void onActionButtonNuevo(ActionEvent actionEvent) {
+
+
+        try{
+
+
+// Cargar la vista de detalle
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/PersonaDetalleView.fxml"));
+
+            Parent rootDetalleView=fxmlLoader.load();
+            PersonaDetalleViewController personaDetalleViewController=fxmlLoader.getController();
+            personaDetalleViewController.setDataUtil(dataUtil);
+            personaDetalleViewController.setRootAgendaView(rootAgendaView);
+
+            personaDetalleViewController.setTableViewPrevio(tableViewAgenda);
 
             // Ocultar la vista de la lista
             rootAgendaView.setVisible(false);

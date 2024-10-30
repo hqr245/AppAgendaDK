@@ -119,7 +119,7 @@ public class Persona
     }
 
     //campo Estado Civil
-    @XmlElement(name = "estadoCivil")
+    @XmlElement(name = "estado_civil")
     public String getEstadoCivil() {
         return estadoCivil.get();
     }

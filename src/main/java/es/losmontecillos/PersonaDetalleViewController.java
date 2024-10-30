@@ -1,30 +1,18 @@
 package es.losmontecillos;
 
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
+
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.StackPane;
-import javafx.stage.FileChooser;
-import javafx.util.Callback;
-import javafx.util.StringConverter;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
+
+import java.sql.Date;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class PersonaDetalleViewController implements Initializable {
@@ -47,6 +35,9 @@ public class PersonaDetalleViewController implements Initializable {
     private CheckBox checkBoxJubilado;
     @javafx.fxml.FXML
     private ComboBox<Provincia> comboBoxProvincia;
+
+    ToggleGroup estadoCivil = new ToggleGroup();
+
     @javafx.fxml.FXML
     private RadioButton radioButtonSoltero;
     public static final String SOLTERO="S";
@@ -68,6 +59,11 @@ public class PersonaDetalleViewController implements Initializable {
     private boolean nuevaPersona;
     private boolean errorFormato = false;
     private InicioController inicioController;
+    private Persona selectedPersona;
+
+    public void setPersona(Persona persona){
+        this.persona=persona;
+    }
 
     //Métodos
     public void setRootAgendaView(AnchorPane rootAgendaView) {this.rootAgendaView = rootAgendaView;}
@@ -78,378 +74,124 @@ public class PersonaDetalleViewController implements Initializable {
 
     public void setTableViewPrevio(TableView tableViewPrevio) {this.tableViewPrevio=tableViewPrevio;}
 
-    //El booleano hace referencia si la persona es nueva o no
-    public void setPersona(Persona persona, Boolean nuevaPersona)
-    {
-        if (!nuevaPersona)
-            this.persona= persona;
-        else
-            this.persona = new Persona();
-        this.nuevaPersona=nuevaPersona;
-    }
 
     public void mostrarDatos() throws ParseException {
-        textFieldNombre.setText(persona.getNombre());
-        textFieldApellidos.setText(persona.getApellidos());
-        textFieldTelefono.setText(persona.getTelefono());
-        textFieldEmail.setText(persona.getEmail());
 
-        // Falta implementar el código para el resto de controles
 
-        if (persona.getNumHijos() != null)
-            textFieldNumHijos.setText(persona.getNumHijos().toString());
 
-        if (persona.getSalario() != null)
-            textFieldSalario.setText(persona.getSalario().toString());
-
-        //Jubilado
-        if (persona.getJubilado() != null && persona.getJubilado() == 1)
-            checkBoxJubilado.setSelected(true);
-        else
-            checkBoxJubilado.setSelected(false);
-
-        //Estado Civil
-        if (persona.getEstadoCivil() != null)
-        {
-            switch(persona.getEstadoCivil())
-            {
-                case CASADO:
-                    radioButtonCasado.setSelected(true);
-                    break;
-                case SOLTERO:
-                    radioButtonSoltero.setSelected(true);
-                    break;
-                case VIUDO:
-                    radioButtonViudo.setSelected(true);
-                    break;
-            }
-        }
-
-        //Fecha Nacimiento
-        if (persona.getFechaNacimiento() != null)
-        {
-            SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
-            Date fecNac = formato.parse(persona.getFechaNacimiento());
-            LocalDate fechaNac =
-                    fecNac.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            datePickerFechaNacimiento.setValue(fechaNac);
-        }
-
-        //Provincia
-        comboBoxProvincia.setItems(dataUtil.getOlProvincias());
-
-        if (persona.getProvincia() != null)
-            comboBoxProvincia.setValue(persona.getProvincia());
-
-        comboBoxProvincia.setCellFactory(
-                (ListView<Provincia> l)-> new ListCell<Provincia>()
-                {
-                    @Override
-                    protected void updateItem(Provincia provincia, boolean empty)
-                    {
-                        super.updateItem(provincia, empty);
-
-                        if (provincia == null || empty)
-                            setText("");
-                        else
-                            setText(provincia.getCodigo() + "-" + provincia.getNombre());
-                    }
-                });
-
-        comboBoxProvincia.setConverter(new StringConverter<Provincia>(){
-            @Override
-            public String toString(Provincia provincia)
-            {
-                if (provincia == null)
-                    return null;
-                else
-                    return provincia.getCodigo()+"-"+provincia.getNombre();
-            }
-            @Override
-            public Provincia fromString(String userId)
-            {
-                return null;
-            }
-        });
-
-        //Foto
-        if (persona.getFoto() != null){
-            String imageFileName=persona.getFoto();
-            File file = new File(CARPETA_FOTOS+"/"+imageFileName);
-            if (file.exists())
-            {
-                Image image = new Image(file.toURI().toString());
-                imageViewFoto.setImage(image);
-            }
-            else
-            {
-                Alert alert=new Alert(Alert.AlertType.INFORMATION,"No se encuentra la imagen en "+file.toURI().toString());
-                alert.showAndWait();
-            }
-        }
     }
 
     @javafx.fxml.FXML
     private void onActionButtonExaminar(ActionEvent event) {
-        File carpetaFotos = new File(CARPETA_FOTOS);
 
-        if (!carpetaFotos.exists())
-            carpetaFotos.mkdir();
+        System.err.println("Botón examinar presionado");
 
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Seleccionar imagen");
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Imágenes (jpg, png)", "*.jpg",
-                        "*.png"),
-                new FileChooser.ExtensionFilter("Todos los archivos","*.*"));
-        File file = fileChooser.showOpenDialog(
-                rootPersonaDetalleView.getScene().getWindow());
-
-        if (file != null)
-        {
-            try
-            {
-                Files.copy(file.toPath(),new File(CARPETA_FOTOS+
-                        "/"+file.getName()).toPath());
-                persona.setFoto(file.getName());
-                Image image = new Image(file.toURI().toString());
-                imageViewFoto.setImage(image);
-            }
-            catch (FileAlreadyExistsException ex)
-            {
-                Alert alert = new Alert(Alert.AlertType.WARNING,"Nombre de archivo duplicado");
-                alert.showAndWait();
-            }
-            catch (IOException ex)
-            {
-                Alert alert = new Alert(Alert.AlertType.WARNING,"No se ha podido guardar la imagen");
-                alert.showAndWait();
-            }
-        }
     }
 
     @javafx.fxml.FXML
     private void onActionSuprimirFoto(ActionEvent event){
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmar supresión de imagen");
-        alert.setHeaderText("¿Desea SUPRIMIR el archivo asociado a la imagen,\n"+ "quitar la foto pero MANTENER el archivo, \no CANCELAR la operación?");
-        alert.setContentText("Elija la opción deseada:");
-        ButtonType buttonTypeEliminar = new ButtonType("Suprimir");
-        ButtonType buttonTypeMantener = new ButtonType("Mantener");
-        ButtonType buttonTypeCancel = new ButtonType("Cancelar",
-                ButtonBar.ButtonData.CANCEL_CLOSE);
-        alert.getButtonTypes().setAll(buttonTypeEliminar, buttonTypeMantener,
-                buttonTypeCancel);
-        Optional<ButtonType> result = alert.showAndWait();
 
-        if (result.get() == buttonTypeEliminar)
-        {
-            String imageFileName = persona.getFoto();
-            File file = new File(CARPETA_FOTOS + "/" + imageFileName);
+        System.err.println("Botón suprimir presionado");
 
-            if (file.exists())
-                file.delete();
 
-            persona.setFoto(null);
-            imageViewFoto.setImage(null);
-        }
-        else if (result.get() == buttonTypeMantener)
-        {
-            persona.setFoto(null);
-            imageViewFoto.setImage(null);
-        }
     }
 
     @javafx.fxml.FXML
     private void onActionButtonGuardar(ActionEvent event) throws ParseException{
-        //Actualizar las propiedades del objeto Persona obteniendo la información que se encuentre en cada
-        //uno de los controles de la ventana
 
-        // Recoger datos de pantalla
-        if (!errorFormato)
-        {
-            // Los datos introducidos son correctos
-            try
-            {
-                persona.setNombre(textFieldNombre.getText());
+        Persona persona=new Persona();
 
-                persona.setApellidos(textFieldApellidos.getText());
 
-                // Aquí va el código para guardar el objeto en BD, enviar al servidor
-                // y ocultar la vista actual
+        try {
 
-                //Teléfono
-                persona.setTelefono(textFieldTelefono.getText());
+            checkData();
 
-                //Email
-                persona.setEmail(textFieldEmail.getText());
+            persona.setNombre(textFieldNombre.getText());
+            persona.setApellidos(textFieldApellidos.getText());
+            persona.setTelefono(textFieldTelefono.getText());
+            persona.setEmail(textFieldEmail.getText());
+            persona.setFechaNacimiento(datePickerFechaNacimiento.getValue().toString());
+            persona.setNumHijos(Integer.parseInt(textFieldNumHijos.getText()));
 
-                //Num Hijos
-                if (!textFieldNumHijos.getText().isEmpty())
-                {
-                    try
-                    {
-                        persona.setNumHijos(Integer.valueOf(textFieldNumHijos.getText()));
-                    }
-                    catch(NumberFormatException ex)
-                    {
-                        errorFormato = true;
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Número de hijos no válido");
-                        alert.showAndWait();
-                        textFieldNumHijos.requestFocus();
-                    }
-                }
+            if(radioButtonSoltero.isSelected()){persona.setEstadoCivil("S");}
+            if(radioButtonCasado.isSelected()){persona.setEstadoCivil("C");}
+            if(radioButtonViudo.isSelected()){persona.setEstadoCivil("V");}
 
-                //Salario
-                if (!textFieldSalario.getText().isEmpty())
-                {
-                    try
-                    {
-                        Double dSalario =
-                                Double.valueOf(Double.valueOf(textFieldSalario.getText()).doubleValue()
-                                );
-                        persona.setSalario(dSalario);
-                    }
-                    catch(NumberFormatException ex)
-                    {
-                        errorFormato = true;
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Salario no válido");
-                        alert.showAndWait();
-                        textFieldSalario.requestFocus();
-                    }
-                }
 
-                //Checkbox
-                if(checkBoxJubilado.isSelected())
-                {
-                    Integer jubilado = 1;
-                    persona.setJubilado(jubilado);
-                }
-
-                //Radio buttons
-                if (radioButtonCasado.isSelected())
-                    persona.setEstadoCivil(CASADO);
-                else if (radioButtonSoltero.isSelected())
-                    persona.setEstadoCivil(SOLTERO);
-                else if (radioButtonViudo.isSelected())
-                    persona.setEstadoCivil(VIUDO);
-
-                //Fecha Nacimiento
-                if (datePickerFechaNacimiento.getValue() != null)
-                {
-                    LocalDate localDate = datePickerFechaNacimiento.getValue();
-                    ZonedDateTime zonedDateTime =
-                            localDate.atStartOfDay(ZoneId.systemDefault());
-                    Instant instant = zonedDateTime.toInstant();
-                    Date date = Date.from(instant);
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                    String fechaComoCadena = sdf.format(date);
-                    persona.setFechaNacimiento(fechaComoCadena);
-                }
-                else
-                {
-                    persona.setFechaNacimiento(null);
-                }
-
-                //ComboBox Provincia
-                if (comboBoxProvincia.getValue() != null)
-                    persona.setProvincia(comboBoxProvincia.getValue());
-                else
-                {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION,"Debe indicar una provincia");
-                    alert.showAndWait();
-                    errorFormato = true;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                //Los datos introducidos no cumplen requisitos
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setHeaderText("No se han podido guardar los cambios. "
-                        + "Compruebe que los datos cumplen los requisitos");
-                alert.setContentText(ex.getLocalizedMessage());
-                alert.showAndWait();
-            }
-        }
-        else
-        {
-            //Los datos introducidos no cumplen requisitos
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("No se han podido guardar los cambios. "
-                    + "Compruebe que los datos cumplen los requisitos");
-            alert.setContentText("Los campos Nombre y Apellidos son obligatorios");
-            alert.showAndWait();
-        }
+            persona.setSalario(Double.parseDouble(textFieldSalario.getText()));
+            persona.setJubilado(checkBoxJubilado.isSelected() ? 1 : 0);
+            persona.setProvincia(comboBoxProvincia.getValue());
+            //TODO persona.setFoto...
 
 
 
+            if(this.selectedPersona!=null){dataUtil.actualizarPersona(persona);}else{
+            dataUtil.addPersona(persona);}
 
-        if (nuevaPersona)
-            dataUtil.addPersona(persona);
-        else
-            dataUtil.actualizarPersona(persona);
 
-        //Actualizar los nuevos datos en el TableView y seleccionar la
-        //última fila del TableView, ya que ahí se debe encontrar el nuevo objeto que se añade
-        int numFilaSeleccionada;
-        if (nuevaPersona)
-        {
             tableViewPrevio.getItems().add(persona);
-            numFilaSeleccionada = tableViewPrevio.getItems().size()- 1;
-            tableViewPrevio.getSelectionModel().select(numFilaSeleccionada);
-            tableViewPrevio.scrollTo(numFilaSeleccionada);
-        }
-        else
-        {
-            numFilaSeleccionada=
-                    tableViewPrevio.getSelectionModel().getSelectedIndex();
-            tableViewPrevio.getItems().set(numFilaSeleccionada,persona);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Persona Creada Con Éxito");
+            alert.setHeaderText(null);
+            alert.setContentText("La persona Con nombre "+persona.nombreProperty().get()+" Ha sido creada con éxito." );
+            alert.showAndWait();
+
+            rootPersonaDetalleView.setVisible(false);
+            rootAgendaView.setVisible(true);
+
+        }catch (Exception e){
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("ERROR");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+
+
         }
 
-        TablePosition pos = new TablePosition(tableViewPrevio,
-                numFilaSeleccionada,null);
-        tableViewPrevio.getFocusModel().focus(pos);
-        tableViewPrevio.requestFocus();
 
-        //Volver a hacer visible el contenedor de la lista de personas, y previamente se
-        //eliminará del StackPane principal la vista del detalle.
-        StackPane rootMain =
-                (StackPane) rootPersonaDetalleView.getScene().getRoot();
-        rootMain.getChildren().remove(rootPersonaDetalleView);
-        rootAgendaView.setVisible(true);
+
+    }
+
+    private void checkData()throws Exception {
+
+
+        if(textFieldNombre.getText().isEmpty()){throw new Exception("Error en el campo nombre");}
+        if (textFieldApellidos.getText().isEmpty()){throw new Exception("Error en el campo apellido");}
+        if (textFieldEmail.getText().isEmpty()){throw new Exception("Error en el campo email");}
+        if (datePickerFechaNacimiento.getValue()==null){throw new Exception("Error en el campo fecha nacimiento");}
+        try{Integer.parseInt(textFieldNumHijos.getText());}
+        catch (NumberFormatException e) {throw new Exception("Error en el campo num hijos");}
+        if(comboBoxProvincia.getValue()==null) {throw new Exception("Error en el campo provincia");}
+
     }
 
     @javafx.fxml.FXML
     private void onActionButtonCancelar(ActionEvent event){
-        //Devolver al foco al TableView, concretamente a la misma fila que estuviera
-        //seleccionada previamente
-        int numFilaSeleccionada =
-                tableViewPrevio.getSelectionModel().getSelectedIndex();
-        TablePosition pos = new TablePosition(tableViewPrevio,
-                numFilaSeleccionada,null);
-        tableViewPrevio.getFocusModel().focus(pos);
-        tableViewPrevio.requestFocus();
 
-        //Volver a hacer visible el contenedor de la lista de personas, y previamente se
-        //eliminará del StackPane principal la vista del detalle.
-        StackPane rootMain =
-                (StackPane) rootPersonaDetalleView.getScene().getRoot();
-        rootMain.getChildren().remove(rootPersonaDetalleView);
-        rootAgendaView.setVisible(true);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmacion");
+        alert.setHeaderText(null);
+        alert.setContentText("Estás a punto de cancelar la operación, ¿Estás seguro?");
+        if(alert.showAndWait().get().getButtonData().isDefaultButton()) {
+
+            rootPersonaDetalleView.setVisible(false);
+            rootAgendaView.setVisible(true);
+        }
+
+
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-
+        radioButtonSoltero.setSelected(true);
+        radioButtonSoltero.setToggleGroup(estadoCivil);
+        radioButtonCasado.setToggleGroup(estadoCivil);
+        radioButtonViudo.setToggleGroup(estadoCivil);
 
         comboBoxProvincia.setOnMouseClicked(e->{
-
-            if(comboBoxProvincia.getItems().isEmpty()) {
-
-                comboBoxProvincia.setItems(dataUtil.getOlProvincias());
-
-            }
+            if (comboBoxProvincia.getItems().isEmpty()) {comboBoxProvincia.setItems(dataUtil.getOlProvincias());}
         });
 
         comboBoxProvincia.setCellFactory(listView->new ListCell<>(){
@@ -458,7 +200,7 @@ public class PersonaDetalleViewController implements Initializable {
                 super.updateItem(item, empty);
                 if (item != null) {
 
-                    setText(item.nombreProperty().get());//return String, actuall name of material
+                    setText(item.nombreProperty().get());//return String, actual name of material
 
                 }
                 else {
@@ -467,6 +209,55 @@ public class PersonaDetalleViewController implements Initializable {
             }
 
         });
+
+        comboBoxProvincia.setButtonCell(new ListCell<>(){
+
+            public void updateItem(Provincia item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item != null) {
+                    setText(item.nombreProperty().get());
+                }
+                else {
+                    setText(null);
+                }
+            }
+        });
+
+
+        textFieldNombre.focusedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean t1) {
+
+                if(persona!=null){
+
+                    textFieldNombre.setText(persona.getNombre());
+                    textFieldApellidos.setText(persona.getApellidos());
+                    textFieldTelefono.setText(persona.getTelefono());
+                    textFieldEmail.setText(persona.getEmail());
+                    datePickerFechaNacimiento.setValue(Date.valueOf(persona.getFechaNacimiento()).toLocalDate());
+                    textFieldNumHijos.setText(persona.getNumHijos().toString());
+                    setSelectedRadButton();
+                    textFieldSalario.setText(persona.getSalario().toString());
+                    checkBoxJubilado.setSelected(persona.getJubilado()==1);
+                    comboBoxProvincia.setValue(persona.getProvincia());
+
+
+                }
+
+
+            }
+        });
+
+    }
+
+    private void setSelectedRadButton() {
+
+
+        if(persona.getEstadoCivil().equals("S")){radioButtonSoltero.setSelected(true);}
+
+        if(persona.getEstadoCivil().equals("C")){radioButtonCasado.setSelected(true);}
+        if(persona.getEstadoCivil().equals("V")){radioButtonViudo.setSelected(true);}
+
     }
 
     public void setInicioController(InicioController inicioController) {
